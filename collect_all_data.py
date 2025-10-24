@@ -3,7 +3,7 @@ Toplu Veri Toplama - Tüm hisseler için veri topla
 """
 from collectors.market_data_collector import MarketDataCollector
 from database.db_manager import DatabaseManager
-from config.settings import TEST_HISSELER, TIMEFRAMES
+from config.settings import ACTIVE_STOCKS, TIMEFRAMES
 
 def main():
     print("="*80)
@@ -17,7 +17,10 @@ def main():
     total_bars = 0
     total_stocks = 0
 
-    for ticker in TEST_HISSELER:
+    print(f"📋 Toplam {len(ACTIVE_STOCKS)} hisse için veri toplanacak...")
+    print()
+
+    for ticker in ACTIVE_STOCKS:
         print(f"\n📈 {ticker}")
 
         # Hisseyi veritabanına ekle

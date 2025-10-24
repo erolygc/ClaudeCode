@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from database.db_manager import DatabaseManager
-from config.settings import TEST_HISSELER, TIMEFRAMES
+from config.settings import ACTIVE_STOCKS, TIMEFRAMES
 from indicators.technical_indicators import TechnicalIndicators
 from strategies.signal_generator import SignalGenerator
 import json
@@ -62,7 +62,10 @@ def main():
     print("📊 FAZ 6: OHLCV Verisi Oluşturuluyor...")
     total_bars = 0
 
-    for i, ticker in enumerate(TEST_HISSELER[:3]):  # İlk 3 hisse
+    print(f"📋 {len(ACTIVE_STOCKS[:10])} hisse için sample data oluşturulacak...")
+    print()
+
+    for i, ticker in enumerate(ACTIVE_STOCKS[:10]):  # İlk 10 hisse (hızlı test için)
         print(f"\n📈 {ticker}")
         db.add_stock(ticker)
 

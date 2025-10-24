@@ -2,7 +2,7 @@
 Proje Ayarları - Tüm konfigürasyon burada
 """
 
-# Test için 5 hisse (sonra tüm BIST30'a genişleyecek)
+# Test için 5 hisse (hızlı test için kullanılabilir)
 TEST_HISSELER = [
     "GARAN.IS",   # Garanti Bankası
     "THYAO.IS",   # Türk Hava Yolları
@@ -11,15 +11,127 @@ TEST_HISSELER = [
     "SAHOL.IS"    # Sabancı Holding
 ]
 
-# BIST 30 Hisseleri (gelecekte kullanılacak)
+# BIST 30 Hisseleri (en büyük 30 şirket)
 BIST30_HISSELER = [
-    "AKBNK.IS", "ALARK.IS", "ARCLK.IS", "ASELS.IS", "BIMAS.IS",
-    "EKGYO.IS", "ENJSA.IS", "EREGL.IS", "FROTO.IS", "GARAN.IS",
-    "GUBRF.IS", "HEKTS.IS", "ISCTR.IS", "KCHOL.IS", "KONTR.IS",
-    "KORDS.IS", "KOZAA.IS", "KOZAL.IS", "PETKM.IS", "PGSUS.IS",
-    "SAHOL.IS", "SASA.IS", "SISE.IS", "TAVHL.IS", "TCELL.IS",
-    "THYAO.IS", "TKFEN.IS", "TOASO.IS", "TUPRS.IS", "YKBNK.IS"
+    'AKBNK.IS',   # Akbank
+    'ARCLK.IS',   # Arçelik
+    'ASELS.IS',   # Aselsan
+    'BIMAS.IS',   # BIM
+    'DOHOL.IS',   # Doğan Holding
+    'EKGYO.IS',   # Emlak Konut GYO
+    'ENKAI.IS',   # Enka İnşaat
+    'EREGL.IS',   # Ereğli Demir Çelik
+    'FROTO.IS',   # Ford Otosan
+    'GARAN.IS',   # Garanti Bankası
+    'HALKB.IS',   # Halkbank
+    'ISCTR.IS',   # İş Bankası (C)
+    'KCHOL.IS',   # Koç Holding
+    'KRDMD.IS',   # Kardemir
+    'ODAS.IS',    # Odaş Elektrik
+    'OYAKC.IS',   # Oyak Çimento
+    'PETKM.IS',   # Petkim
+    'PGSUS.IS',   # Pegasus
+    'SAHOL.IS',   # Sabancı Holding
+    'SASA.IS',    # Sasa Polyester
+    'SISE.IS',    # Şişe Cam
+    'TAVHL.IS',   # TAV Havalimanları
+    'TCELL.IS',   # Turkcell
+    'THYAO.IS',   # Türk Hava Yolları
+    'TKFEN.IS',   # Tekfen Holding
+    'TOASO.IS',   # Tofaş
+    'TTKOM.IS',   # Türk Telekom
+    'TUPRS.IS',   # Tüpraş
+    'VAKBN.IS',   # Vakıfbank
+    'YKBNK.IS',   # Yapı Kredi Bankası
 ]
+
+# BIST 50 - BIST30 + ek 20 hisse
+BIST50_EXTRA = [
+    'AEFES.IS',   # Anadolu Efes
+    'AHGAZ.IS',   # Ahlatcı Gaz
+    'AKSA.IS',    # Aksa Akrilik
+    'AKSEN.IS',   # Aksa Enerji
+    'ALARK.IS',   # Alarko Holding
+    'AYGAZ.IS',   # Aygaz
+    'BRISA.IS',   # Brisa
+    'CIMSA.IS',   # Çimsa
+    'DOAS.IS',    # Doğuş Otomotiv
+    'ENJSA.IS',   # Enerjisa
+    'GLYHO.IS',   # Global Yatırım Holding
+    'GUBRF.IS',   # Gübre Fabrikaları
+    'HEKTS.IS',   # Hektaş
+    'KOZAA.IS',   # Koza Altın
+    'KOZAL.IS',   # Koza Anadolu Metal
+    'LOGO.IS',    # Logo Yazılım
+    'MAVI.IS',    # Mavi Giyim
+    'MGROS.IS',   # Migros
+    'SOKM.IS',    # Şok Marketler
+    'VESTL.IS',   # Vestel
+]
+
+BIST50_HISSELER = BIST30_HISSELER + BIST50_EXTRA
+
+# BIST 100 - BIST50 + ek 50 hisse
+BIST100_EXTRA = [
+    'AGHOL.IS',   # Ag Anadolu Grubu Holding
+    'AKFGY.IS',   # Akfen GYO
+    'AKGRT.IS',   # Aksigorta
+    'AKSUE.IS',   # Aksu Enerji
+    'ALBRK.IS',   # Albaraka Türk
+    'ALGYO.IS',   # Albaraka GYO
+    'ALKIM.IS',   # Alkim Kağıt
+    'ANHYT.IS',   # Anadolu Hayat Emeklilik
+    'ANSGR.IS',   # Anadolu Sigorta
+    'AYDEM.IS',   # Aydem Enerji
+    'BAGFS.IS',   # Bagfaş
+    'BANVT.IS',   # Banvit
+    'BERA.IS',    # Bera Holding
+    'BJKAS.IS',   # Beşiktaş
+    'BRSAN.IS',   # Borusan Mannesmann
+    'BSOKE.IS',   # Batısöke Söke Çimento
+    'BTCIM.IS',   # Batıçim
+    'BUCIM.IS',   # Bursa Çimento
+    'CCOLA.IS',   # Coca Cola İçecek
+    'CEMTS.IS',   # Cemtaş
+    'CLEBI.IS',   # Çelebi
+    'CONSE.IS',   # Consus Enerji
+    'CVKMD.IS',   # Cvk Maden
+    'DEVA.IS',    # Deva Holding
+    'DYOBY.IS',   # Dyo Boya
+    'EGEEN.IS',   # Ege Endüstri
+    'EGPRO.IS',   # Ege Profil
+    'FENER.IS',   # Fenerbahçe
+    'GENIL.IS',   # Gen İlaç
+    'GESAN.IS',   # Gizem Sanayi
+    'GOZDE.IS',   # Gözde Girişim
+    'GSRAY.IS',   # Galatasaray
+    'IEYHO.IS',   # İhlas Ev Aletleri
+    'IHEVA.IS',   # İheva
+    'IPEKE.IS',   # İpek Enerji
+    'ISDMR.IS',   # İskenderun Demir Çelik
+    'IZMDC.IS',   # İzmir Demir Çelik
+    'KARSN.IS',   # Karsan
+    'KLMSN.IS',   # Klimasan
+    'KONTR.IS',   # Kontrolmatik
+    'KONYA.IS',   # Konya Çimento
+    'KORDS.IS',   # Kordsa
+    'KRTEK.IS',   # Kartonsan
+    'MPARK.IS',   # MLP Sağlık
+    'NETAS.IS',   # Netaş
+    'NTTUR.IS',   # Net Turizm
+    'OTKAR.IS',   # Otokar
+    'PARSN.IS',   # Parsan
+    'PRKME.IS',   # Park Elektrik
+    'TTRAK.IS',   # Türk Traktör
+]
+
+BIST100_HISSELER = BIST50_HISSELER + BIST100_EXTRA
+
+# Aktif hisse listesi (değiştirerek hangi endeksi kullanacağınızı seçin)
+ACTIVE_STOCKS = BIST30_HISSELER      # BIST30 (30 hisse)
+# ACTIVE_STOCKS = TEST_HISSELER      # Test için 5 hisse
+# ACTIVE_STOCKS = BIST50_HISSELER    # BIST50
+# ACTIVE_STOCKS = BIST100_HISSELER   # BIST100 (tüm hisseler)
 
 # Zaman dilimleri
 TIMEFRAMES = {
