@@ -17,10 +17,10 @@ env/
 ENV/
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
+# .vscode/ is shared for workspace settings
 
 # OS
 .DS_Store

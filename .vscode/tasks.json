@@ -1,0 +1,49 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Create Sample Data",
+            "type": "shell",
+            "command": "${workspaceFolder}/venv/bin/python",
+            "args": ["${workspaceFolder}/create_sample_data.py"],
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Run Full Pipeline",
+            "type": "shell",
+            "command": "${workspaceFolder}/venv/bin/python",
+            "args": [
+                "-c",
+                "import subprocess; subprocess.run(['python', 'collect_all_data.py']); subprocess.run(['python', 'calculate_indicators.py']); subprocess.run(['python', 'generate_signals.py']); subprocess.run(['python', 'backtest_all.py'])"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Deploy to Azure",
+            "type": "shell",
+            "command": "bash",
+            "args": ["${workspaceFolder}/scripts/deploy_azure.sh"],
+            "problemMatcher": [],
+            "group": "build"
+        },
+        {
+            "label": "Git: Push Current Branch",
+            "type": "shell",
+            "command": "git",
+            "args": ["push", "origin", "HEAD"],
+            "problemMatcher": []
+        }
+    ]
+}

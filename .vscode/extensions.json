@@ -1,0 +1,12 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "eamodio.gitlens",
+        "ms-azuretools.vscode-azurefunctions",
+        "yzhang.markdown-all-in-one",
+        "aaron-bond.better-comments",
+        "njpwerner.autodocstring",
+        "ms-python.black-formatter"
+    ]
+}

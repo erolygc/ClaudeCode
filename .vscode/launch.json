@@ -1,0 +1,60 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "FAZ 6: Data Collection",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/collect_all_data.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "FAZ 7: Calculate Indicators",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/calculate_indicators.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "FAZ 8: Generate Signals",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/generate_signals.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "FAZ 9: Run Backtest",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/backtest_all.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Test: Create Sample Data",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/create_sample_data.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Azure Functions: Attach",
+            "type": "python",
+            "request": "attach",
+            "port": 9091,
+            "preLaunchTask": "func: host start"
+        }
+    ]
+}
