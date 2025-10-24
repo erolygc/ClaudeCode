@@ -1,0 +1,43 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+
+    "_comment_database": "=== Database Configuration ===",
+    "DATABASE_TYPE": "sqlite",
+    "DATABASE_PATH": "../trading_data.db",
+
+    "_comment_postgresql": "PostgreSQL settings (optional, for production)",
+    "POSTGRES_HOST": "your-server.postgres.database.azure.com",
+    "POSTGRES_DB": "tradingdb",
+    "POSTGRES_USER": "adminuser",
+    "POSTGRES_PASSWORD": "your-password-here",
+    "POSTGRES_PORT": "5432",
+
+    "_comment_email": "=== Email Configuration ===",
+    "SMTP_SERVER": "smtp.gmail.com",
+    "SMTP_PORT": "587",
+    "SMTP_USERNAME": "your-email@gmail.com",
+    "SMTP_PASSWORD": "your-app-password",
+    "FROM_EMAIL": "your-email@gmail.com",
+    "TO_EMAILS": "recipient1@example.com,recipient2@example.com",
+
+    "_comment_sendgrid": "SendGrid API (alternative to SMTP)",
+    "SENDGRID_API_KEY": "SG.your-sendgrid-api-key-here",
+
+    "_comment_storage": "=== Azure Storage (for reports) ===",
+    "AZURE_STORAGE_CONNECTION_STRING": "DefaultEndpointsProtocol=https;AccountName=youraccountname;AccountKey=youraccountkey;EndpointSuffix=core.windows.net",
+    "REPORTS_CONTAINER_NAME": "trading-reports",
+
+    "_comment_app_insights": "=== Application Insights ===",
+    "APPINSIGHTS_INSTRUMENTATIONKEY": "your-instrumentation-key",
+
+    "_comment_trading": "=== Trading Configuration ===",
+    "TRADING_MODE": "test",
+    "MAX_POSITION_SIZE": "0.10",
+    "ENABLE_NOTIFICATIONS": "true",
+    "STRONG_SIGNAL_THRESHOLD": "65"
+  },
+  "ConnectionStrings": {}
+}

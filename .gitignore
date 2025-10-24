@@ -30,3 +30,13 @@ Thumbs.db
 *.xlsx
 *.csv
 *.log
+
+# Environment and secrets
+.env
+local.settings.json
+*.pem
+*.key
+
+# Azure Functions
+azure_functions/.python_packages/
+azure_functions/__pycache__/

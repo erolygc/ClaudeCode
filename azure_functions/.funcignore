@@ -1,0 +1,54 @@
+# Azure Functions ignore file
+
+.git/
+.github/
+.vscode/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Local settings (contains secrets)
+local.settings.json
+
+# Database files
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Reports and logs
+*.xlsx
+*.csv
+*.log
+reports/
+logs/
+
+# Tests
+tests/
+.pytest_cache/
+*.coverage
+htmlcov/
+
+# Documentation
+docs/
+*.md
+README*
+
+# IDE
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
