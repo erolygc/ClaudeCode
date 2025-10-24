@@ -109,13 +109,13 @@ def main():
             calc = TechnicalIndicators(df)
             indicators = calc.calculate_all()
 
-            # Veritabanına kaydet
-            saved = 0
-            for ind_name, ind_values in indicators.items():
-                for date_idx, value in zip(df.index, ind_values):
-                    if not np.isnan(value):
-                        db.add_indicator_value(ticker, timeframe, date_idx, ind_name, float(value))
-                        saved += 1
+            # BULK INSERT - Çok daha hızlı!
+            saved = db.add_indicator_values_bulk(
+                ticker=ticker,
+                timeframe=timeframe,
+                indicators_dict=indicators,
+                dates=df.index
+            )
 
             total_indicators += saved
             print(f"✅ {saved:,} indikatör")

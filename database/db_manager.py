@@ -75,6 +75,22 @@ class DatabaseManager:
             )
         """)
 
+        # Performans için index'ler oluştur
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_ohlcv_ticker_timeframe
+            ON ohlcv_data(ticker, timeframe)
+        """)
+
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_indicators_ticker_timeframe
+            ON indicators(ticker, timeframe, indicator_name)
+        """)
+
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_signals_ticker_timeframe
+            ON signals(ticker, timeframe, created_at DESC)
+        """)
+
         conn.commit()
         conn.close()
 
@@ -153,7 +169,11 @@ class DatabaseManager:
         return df
 
     def add_indicator_value(self, ticker, timeframe, date, indicator_name, value):
-        """İndikatör değeri ekle"""
+        """
+        İndikatör değeri ekle (tek değer için)
+
+        NOT: Bulk insert için add_indicator_values_bulk kullanın (çok daha hızlı!)
+        """
         conn = self.get_connection()
         cursor = conn.cursor()
 
@@ -175,6 +195,56 @@ class DatabaseManager:
 
         conn.commit()
         conn.close()
+
+    def add_indicator_values_bulk(self, ticker, timeframe, indicators_dict, dates):
+        """
+        İndikatör değerlerini toplu ekle (BULK INSERT - ÇOK HIZLI!)
+
+        Args:
+            ticker: Hisse kodu
+            timeframe: Zaman dilimi
+            indicators_dict: {indicator_name: numpy_array} formatında indikatörler
+            dates: Tarih array'i (pandas DatetimeIndex)
+
+        Returns:
+            int: Eklenen kayıt sayısı
+
+        Example:
+            indicators = {
+                'RSI_14': array([45.2, 52.1, ...]),
+                'SMA_20': array([100.5, 101.2, ...])
+            }
+            db.add_indicator_values_bulk('GARAN.IS', '1d', indicators, dates)
+        """
+        import numpy as np
+
+        conn = self.get_connection()
+        cursor = conn.cursor()
+
+        # Toplu INSERT için veri hazırla
+        bulk_data = []
+
+        for ind_name, ind_values in indicators_dict.items():
+            for date_idx, value in zip(dates, ind_values):
+                # NaN değerleri atla
+                if not np.isnan(value):
+                    # Timestamp'i string'e çevir
+                    date_str = date_idx.strftime('%Y-%m-%d %H:%M:%S') if hasattr(date_idx, 'strftime') else str(date_idx)
+                    bulk_data.append((ticker, timeframe, date_str, ind_name, float(value)))
+
+        # Toplu INSERT (executemany ile)
+        if bulk_data:
+            cursor.executemany("""
+                INSERT OR REPLACE INTO indicators (ticker, timeframe, date, indicator_name, value)
+                VALUES (?, ?, ?, ?, ?)
+            """, bulk_data)
+
+            conn.commit()
+
+        count = len(bulk_data)
+        conn.close()
+
+        return count
 
     def get_latest_indicator_value(self, ticker, timeframe, indicator_name):
         """En son indikatör değerini getir"""
