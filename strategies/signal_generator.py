@@ -41,12 +41,12 @@ class SignalGenerator:
             volatility['score'] * SIGNAL_SETTINGS['volatility_weight']
         )
 
-        # Sinyal belirle
-        if final_score >= SIGNAL_SETTINGS['strong_threshold']:
+        # Sinyal belirle (6-level threshold system)
+        if final_score >= SIGNAL_SETTINGS['buy_threshold']:  # >= 60 (includes strong_buy >= 70)
             signal = 'BUY'
-        elif final_score <= SIGNAL_SETTINGS['weak_threshold']:
+        elif final_score <= SIGNAL_SETTINGS['sell_threshold']:  # <= 40 (includes strong_sell <= 30)
             signal = 'SELL'
-        else:
+        else:  # Between 40-60
             signal = 'HOLD'
 
         return {
