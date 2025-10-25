@@ -69,7 +69,7 @@ class OptimizedBacktest:
             # OHLCV verisini cache'den al veya çek
             if cache_key not in ohlcv_cache:
                 ohlcv_df = pd.read_sql_query(f"""
-                    SELECT date, Open, High, Low, Close, Volume
+                    SELECT date, open, high, low, close, volume
                     FROM ohlcv_data
                     WHERE ticker = '{ticker}' AND timeframe = '{timeframe}'
                     ORDER BY date ASC
@@ -79,6 +79,8 @@ class OptimizedBacktest:
                     skipped += 1
                     continue
 
+                # Column isimlerini büyük harfe çevir
+                ohlcv_df.columns = ['date', 'Open', 'High', 'Low', 'Close', 'Volume']
                 ohlcv_df['date'] = pd.to_datetime(ohlcv_df['date'])
                 ohlcv_cache[cache_key] = ohlcv_df
 
