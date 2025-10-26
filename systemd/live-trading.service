@@ -1,0 +1,26 @@
+[Unit]
+Description=Live Trading System - Automated Stock Trading
+After=network.target
+
+[Service]
+Type=simple
+User=user
+WorkingDirectory=/home/user/ClaudeCode
+Environment="PYTHONUNBUFFERED=1"
+
+# Paper trading mode (test)
+ExecStart=/usr/bin/python3 /home/user/ClaudeCode/run_live_trading.py --mode paper --capital 100000 --interval 300 --timeframes 1d --max-stocks 30
+
+# GERÇEK İŞLEM İÇİN (DİKKAT! Gerçek para riski var!)
+# ExecStart=/usr/bin/python3 /home/user/ClaudeCode/run_live_trading.py --mode live --capital 10000 --interval 300 --timeframes 1d --max-stocks 10
+
+# Restart policy
+Restart=on-failure
+RestartSec=30
+
+# Logging
+StandardOutput=append:/home/user/ClaudeCode/logs/live-trading.log
+StandardError=append:/home/user/ClaudeCode/logs/live-trading-error.log
+
+[Install]
+WantedBy=multi-user.target
