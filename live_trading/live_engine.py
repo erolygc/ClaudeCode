@@ -49,7 +49,6 @@ class LiveTradingEngine:
         # Bileşenler
         self.db = DatabaseManager()
         self.collector = MarketDataCollector()
-        self.indicators = TechnicalIndicators()
         self.signal_gen = SignalGenerator()
         self.risk_manager = RiskManager(initial_capital=initial_capital)
 
@@ -135,8 +134,9 @@ class LiveTradingEngine:
             if data is None or len(data) < 200:
                 return False
 
-            # İndikatörleri hesapla
-            indicators_dict = self.indicators.calculate_all_indicators(data)
+            # İndikatörleri hesapla (her seferinde yeni instance oluştur)
+            indicators = TechnicalIndicators(data)
+            indicators_dict = indicators.calculate_all()
 
             if indicators_dict:
                 # Veritabanına kaydet (bulk insert)
