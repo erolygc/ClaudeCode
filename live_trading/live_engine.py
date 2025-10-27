@@ -88,25 +88,25 @@ class LiveTradingEngine:
     def fetch_latest_data(self, ticker: str, timeframe: str) -> Optional[pd.DataFrame]:
         """En son veriyi çek"""
         try:
-            # Timeframe'e göre period belirle
+            # Timeframe'e göre period belirle (İndikatörler için yeterli veri: 200+ bar)
             if timeframe == '1m':
-                period = '1d'
+                period = '5d'       # 5 gün * 390 dakika = 1950 bar
             elif timeframe == '5m':
-                period = '5d'
+                period = '25d'      # 25 gün * 78 5-dakika = 1950 bar
             elif timeframe == '15m':
-                period = '5d'
+                period = '60d'      # 60 gün * 26 15-dakika = 1560 bar
             elif timeframe == '30m':
-                period = '5d'
+                period = '60d'      # 60 gün * 13 30-dakika = 780 bar
             elif timeframe == '1h':
-                period = '5d'
+                period = '90d'      # 90 gün * 6.5 saat = 585 bar
             elif timeframe == '4h':
-                period = '1mo'
+                period = '2y'       # 2 yıl = ~500 4-saatlik bar
             elif timeframe == '1d':
-                period = '1mo'
+                period = '2y'       # 2 yıl = ~500 günlük bar
             elif timeframe == '1w':
-                period = '3mo'
+                period = '10y'      # 10 yıl = ~520 hafta
             else:
-                period = '1mo'
+                period = '1y'       # Varsayılan 1 yıl
 
             # Veriyi çek
             data = self.collector.collect_data(
