@@ -263,6 +263,36 @@ class DatabaseManager:
 
         return result[0] if result else None
 
+    def get_indicator_values(self, ticker, timeframe):
+        """
+        Bir hisse için tüm indikatör değerlerini getir
+
+        Args:
+            ticker: Hisse kodu
+            timeframe: Zaman dilimi
+
+        Returns:
+            pd.DataFrame: timestamp, indicator_name, value sütunlarıyla DataFrame
+        """
+        conn = self.get_connection()
+
+        df = pd.read_sql_query("""
+            SELECT date as timestamp, indicator_name, value
+            FROM indicators
+            WHERE ticker = ? AND timeframe = ?
+            ORDER BY date ASC
+        """, conn, params=(ticker, timeframe))
+
+        conn.close()
+
+        if len(df) == 0:
+            return None
+
+        # Timestamp'i datetime'a çevir
+        df['timestamp'] = pd.to_datetime(df['timestamp'], format='mixed', utc=True)
+
+        return df
+
     def add_signal(self, ticker, timeframe, signal, score, details=None):
         """Sinyal ekle"""
         conn = self.get_connection()
