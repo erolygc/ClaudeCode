@@ -21,6 +21,19 @@ class Position:
     stop_loss: float
     take_profit: float
     current_price: float = 0.0
+    trailing_stop_enabled: bool = True
+    trailing_stop_percent: float = 0.05  # %5 trailing stop
+    highest_price: float = 0.0  # En yüksek fiyat (BUY için)
+    lowest_price: float = float('inf')  # En düşük fiyat (SELL için)
+
+    def __post_init__(self):
+        """Initialize highest/lowest price with entry price"""
+        if self.highest_price == 0.0:
+            self.highest_price = self.entry_price
+        if self.lowest_price == float('inf'):
+            self.lowest_price = self.entry_price
+        if self.current_price == 0.0:
+            self.current_price = self.entry_price
 
     @property
     def current_value(self) -> float:
@@ -42,6 +55,47 @@ class Position:
             return ((self.current_price - self.entry_price) / self.entry_price) * 100
         else:
             return ((self.entry_price - self.current_price) / self.entry_price) * 100
+
+    def update_trailing_stop(self) -> tuple[bool, float]:
+        """
+        Trailing stop loss'u güncelle
+
+        Returns:
+            tuple: (güncellendi_mi, yeni_stop_loss)
+        """
+        if not self.trailing_stop_enabled:
+            return False, self.stop_loss
+
+        old_stop_loss = self.stop_loss
+        updated = False
+
+        if self.side == 'BUY':
+            # En yüksek fiyatı güncelle
+            if self.current_price > self.highest_price:
+                self.highest_price = self.current_price
+
+            # Yeni stop loss hesapla (en yüksek fiyattan %5 aşağı)
+            new_stop_loss = self.highest_price * (1 - self.trailing_stop_percent)
+
+            # Stop loss'u sadece yukarı çek (asla aşağı indirme)
+            if new_stop_loss > self.stop_loss:
+                self.stop_loss = new_stop_loss
+                updated = True
+
+        else:  # SELL
+            # En düşük fiyatı güncelle
+            if self.current_price < self.lowest_price:
+                self.lowest_price = self.current_price
+
+            # Yeni stop loss hesapla (en düşük fiyattan %5 yukarı)
+            new_stop_loss = self.lowest_price * (1 + self.trailing_stop_percent)
+
+            # Stop loss'u sadece aşağı çek
+            if new_stop_loss < self.stop_loss:
+                self.stop_loss = new_stop_loss
+                updated = True
+
+        return updated, self.stop_loss
 
     def should_close(self) -> tuple[bool, str]:
         """Pozisyon kapatılmalı mı?"""
@@ -239,15 +293,33 @@ class RiskManager:
 
         return pnl
 
-    def update_positions(self, prices: Dict[str, float]):
-        """Tüm pozisyonları güncelle ve gerekirse kapat"""
+    def update_positions(self, prices: Dict[str, float], notify_callback=None):
+        """
+        Tüm pozisyonları güncelle ve gerekirse kapat
+
+        Args:
+            prices: Hisse fiyatları dict'i
+            notify_callback: Trailing stop güncellemesi için callback fonksiyonu
+        """
 
         positions_to_close = []
 
         for ticker, position in self.positions.items():
             if ticker in prices:
+                old_stop_loss = position.stop_loss
+
                 # Fiyatı güncelle
                 position.current_price = prices[ticker]
+
+                # Trailing stop'u güncelle
+                updated, new_stop_loss = position.update_trailing_stop()
+
+                if updated:
+                    print(f"📈 {ticker} Trailing Stop güncellendi: {old_stop_loss:.2f} → {new_stop_loss:.2f} TL")
+
+                    # Callback varsa bildir
+                    if notify_callback:
+                        notify_callback(ticker, old_stop_loss, new_stop_loss, position.current_price)
 
                 # Kapatılmalı mı kontrol et
                 should_close, reason = position.should_close()

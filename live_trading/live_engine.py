@@ -18,6 +18,13 @@ from strategies.signal_generator import SignalGenerator
 from live_trading.risk_manager import RiskManager
 from config.settings import ACTIVE_STOCKS, TIMEFRAMES
 
+# Telegram bot (opsiyonel)
+try:
+    from notifications.telegram_bot import TelegramNotifier
+    TELEGRAM_AVAILABLE = True
+except ImportError:
+    TELEGRAM_AVAILABLE = False
+
 
 class LiveTradingEngine:
     """
@@ -51,6 +58,11 @@ class LiveTradingEngine:
         self.collector = MarketDataCollector()
         self.signal_gen = SignalGenerator()
         self.risk_manager = RiskManager(initial_capital=initial_capital)
+
+        # Telegram bot (opsiyonel)
+        self.telegram = None
+        if TELEGRAM_AVAILABLE:
+            self.telegram = TelegramNotifier()
 
         # Aktif hisseler ve timeframe'ler
         self.active_stocks = ACTIVE_STOCKS[:max_stocks] if max_stocks else ACTIVE_STOCKS
