@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Trading Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+        }
+
+        .header .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .metric-value {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .metric-value.positive {
+            color: #10b981;
+        }
+
+        .metric-value.negative {
+            color: #ef4444;
+        }
+
+        .signal-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            background: #f9fafb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .signal-buy {
+            border-left: 4px solid #10b981;
+        }
+
+        .signal-sell {
+            border-left: 4px solid #ef4444;
+        }
+
+        .signal-hold {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .signal-info {
+            flex: 1;
+        }
+
+        .signal-ticker {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .signal-details {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .signal-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .badge-buy {
+            background: #10b981;
+        }
+
+        .badge-sell {
+            background: #ef4444;
+        }
+
+        .badge-hold {
+            background: #f59e0b;
+        }
+
+        .position-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .position-table th {
+            background: #f9fafb;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .position-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .position-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .large-card {
+            grid-column: 1 / -1;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .refresh-info {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-box .label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-box .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Live Trading Dashboard</h1>
+            <div class="status">
+                <div class="status-indicator"></div>
+                <span>Canlı</span>
+                <span id="last-update" style="margin-left: 20px; color: #666; font-size: 14px;"></span>
+            </div>
+        </div>
+
+        <!-- Portfolio Overview -->
+        <div class="grid">
+            <div class="card">
+                <h2>💰 Portföy Durumu</h2>
+                <div id="portfolio-metrics">
+                    <div class="loading">Yükleniyor...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📈 Günlük Performans</h2>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="label">Günlük P&L</div>
+                        <div class="value" id="daily-pnl">-</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="label">Aktif Pozisyon</div>
+                        <div class="value" id="positions-count">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🎯 Risk Metrikleri</h2>
+                <div id="risk-metrics">
+                    <div class="loading">Yükleniyor...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid">
+            <div class="card large-card">
+                <h2>📊 Equity Curve</h2>
+                <div class="chart-container">
+                    <canvas id="equity-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signals and Positions -->
+        <div class="grid">
+            <div class="card">
+                <h2>🔔 Son Sinyaller</h2>
+                <div id="signals-list">
+                    <div class="loading">Yükleniyor...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📋 Açık Pozisyonlar</h2>
+                <div id="positions-list">
+                    <div class="loading">Yükleniyor...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="grid">
+            <div class="card large-card">
+                <h2>📊 İstatistikler</h2>
+                <div id="stats-section">
+                    <div class="loading">Yükleniyor...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="refresh-info">
+            Otomatik güncelleme: Her 5 saniyede bir
+        </div>
+    </div>
+
+    <script>
+        let equityChart = null;
+
+        // Fetch portfolio data
+        async function fetchPortfolio() {
+            try {
+                const response = await fetch('/api/portfolio');
+                const data = await response.json();
+
+                if (data.status === 'ok') {
+                    updatePortfolioMetrics(data.portfolio);
+                    document.getElementById('last-update').textContent =
+                        'Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR');
+                }
+            } catch (error) {
+                console.error('Portfolio fetch error:', error);
+            }
+        }
+
+        // Update portfolio metrics
+        function updatePortfolioMetrics(portfolio) {
+            const html = `
+                <div class="metric">
+                    <span class="metric-label">Toplam Sermaye</span>
+                    <span class="metric-value">${portfolio.total_capital.toLocaleString('tr-TR', {minimumFractionDigits: 2})} TL</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Nakit</span>
+                    <span class="metric-value">${portfolio.cash.toLocaleString('tr-TR', {minimumFractionDigits: 2})} TL</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Pozisyon Değeri</span>
+                    <span class="metric-value">${portfolio.positions_value.toLocaleString('tr-TR', {minimumFractionDigits: 2})} TL</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Toplam P&L</span>
+                    <span class="metric-value ${portfolio.total_pnl >= 0 ? 'positive' : 'negative'}">
+                        ${portfolio.total_pnl >= 0 ? '+' : ''}${portfolio.total_pnl.toLocaleString('tr-TR', {minimumFractionDigits: 2})} TL
+                    </span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Getiri</span>
+                    <span class="metric-value ${portfolio.return_percent >= 0 ? 'positive' : 'negative'}">
+                        ${portfolio.return_percent >= 0 ? '+' : ''}${portfolio.return_percent.toFixed(2)}%
+                    </span>
+                </div>
+            `;
+            document.getElementById('portfolio-metrics').innerHTML = html;
+
+            // Update daily stats
+            document.getElementById('daily-pnl').textContent =
+                (portfolio.daily_pnl >= 0 ? '+' : '') + portfolio.daily_pnl.toLocaleString('tr-TR', {minimumFractionDigits: 0});
+            document.getElementById('daily-pnl').style.color = portfolio.daily_pnl >= 0 ? '#10b981' : '#ef4444';
+
+            document.getElementById('positions-count').textContent = portfolio.positions_count;
+        }
+
+        // Fetch signals
+        async function fetchSignals() {
+            try {
+                const response = await fetch('/api/signals?hours=2');
+                const data = await response.json();
+
+                if (data.status === 'ok' && data.signals.length > 0) {
+                    updateSignalsList(data.signals.slice(0, 10));
+                }
+            } catch (error) {
+                console.error('Signals fetch error:', error);
+            }
+        }
+
+        // Update signals list
+        function updateSignalsList(signals) {
+            if (signals.length === 0) {
+                document.getElementById('signals-list').innerHTML = '<p style="text-align: center; color: #666;">Henüz sinyal yok</p>';
+                return;
+            }
+
+            const html = signals.map(signal => `
+                <div class="signal-item signal-${signal.signal.toLowerCase()}">
+                    <div class="signal-info">
+                        <div class="signal-ticker">${signal.ticker}</div>
+                        <div class="signal-details">
+                            ${signal.timeframe} | Skor: ${signal.score.toFixed(1)} | ${new Date(signal.created_at).toLocaleTimeString('tr-TR')}
+                        </div>
+                    </div>
+                    <span class="signal-badge badge-${signal.signal.toLowerCase()}">${signal.signal}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('signals-list').innerHTML = html;
+        }
+
+        // Fetch positions
+        async function fetchPositions() {
+            try {
+                const response = await fetch('/api/positions');
+                const data = await response.json();
+
+                if (data.status === 'ok') {
+                    updatePositionsList(data.positions);
+                }
+            } catch (error) {
+                console.error('Positions fetch error:', error);
+            }
+        }
+
+        // Update positions list
+        function updatePositionsList(positions) {
+            if (positions.length === 0) {
+                document.getElementById('positions-list').innerHTML = '<p style="text-align: center; color: #666;">Açık pozisyon yok</p>';
+                return;
+            }
+
+            const html = `
+                <table class="position-table">
+                    <thead>
+                        <tr>
+                            <th>Hisse</th>
+                            <th>Adet</th>
+                            <th>Fiyat</th>
+                            <th>P&L</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${positions.map(pos => `
+                            <tr>
+                                <td><strong>${pos.ticker}</strong></td>
+                                <td>${pos.quantity}</td>
+                                <td>${pos.current_price.toFixed(2)}</td>
+                                <td style="color: ${pos.pnl >= 0 ? '#10b981' : '#ef4444'}; font-weight: bold;">
+                                    ${pos.pnl >= 0 ? '+' : ''}${pos.pnl.toFixed(2)} (${pos.pnl_percent >= 0 ? '+' : ''}${pos.pnl_percent.toFixed(2)}%)
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('positions-list').innerHTML = html;
+        }
+
+        // Fetch performance data
+        async function fetchPerformance() {
+            try {
+                const response = await fetch('/api/performance');
+                const data = await response.json();
+
+                if (data.status === 'ok') {
+                    updateRiskMetrics(data.metrics);
+                    updateEquityChart(data.equity_curve);
+                }
+            } catch (error) {
+                console.error('Performance fetch error:', error);
+            }
+        }
+
+        // Update risk metrics
+        function updateRiskMetrics(metrics) {
+            const html = `
+                <div class="metric">
+                    <span class="metric-label">Sharpe Ratio</span>
+                    <span class="metric-value">${metrics.sharpe_ratio.toFixed(2)}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Win Rate</span>
+                    <span class="metric-value">${metrics.win_rate.toFixed(1)}%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Max Drawdown</span>
+                    <span class="metric-value negative">${metrics.max_drawdown.toFixed(2)}%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Profit Factor</span>
+                    <span class="metric-value">${metrics.profit_factor.toFixed(2)}</span>
+                </div>
+            `;
+            document.getElementById('risk-metrics').innerHTML = html;
+        }
+
+        // Update equity chart
+        function updateEquityChart(equityCurve) {
+            const ctx = document.getElementById('equity-chart').getContext('2d');
+
+            if (equityChart) {
+                equityChart.destroy();
+            }
+
+            equityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: equityCurve.map(d => d.date),
+                    datasets: [{
+                        label: 'Sermaye',
+                        data: equityCurve.map(d => d.value),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString('tr-TR') + ' TL';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Fetch stats
+        async function fetchStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+
+                if (data.status === 'ok') {
+                    updateStats(data);
+                }
+            } catch (error) {
+                console.error('Stats fetch error:', error);
+            }
+        }
+
+        // Update statistics
+        function updateStats(data) {
+            const signalDist = data.signal_distribution;
+            const timeframeStats = data.timeframe_stats;
+
+            let html = '<div class="stats-grid">';
+
+            // Signal distribution
+            html += '<div class="stat-box"><div class="label">BUY Sinyalleri</div><div class="value" style="color: #10b981;">' +
+                    (signalDist.BUY?.count || 0) + '</div></div>';
+            html += '<div class="stat-box"><div class="label">SELL Sinyalleri</div><div class="value" style="color: #ef4444;">' +
+                    (signalDist.SELL?.count || 0) + '</div></div>';
+            html += '<div class="stat-box"><div class="label">HOLD Sinyalleri</div><div class="value" style="color: #f59e0b;">' +
+                    (signalDist.HOLD?.count || 0) + '</div></div>';
+
+            // Timeframe stats
+            for (const [tf, count] of Object.entries(timeframeStats)) {
+                html += `<div class="stat-box"><div class="label">${tf} Hisseler</div><div class="value">${count}</div></div>`;
+            }
+
+            html += '</div>';
+
+            document.getElementById('stats-section').innerHTML = html;
+        }
+
+        // Initialize dashboard
+        async function initDashboard() {
+            await fetchPortfolio();
+            await fetchSignals();
+            await fetchPositions();
+            await fetchPerformance();
+            await fetchStats();
+        }
+
+        // Auto refresh
+        function startAutoRefresh() {
+            setInterval(async () => {
+                await fetchPortfolio();
+                await fetchSignals();
+                await fetchPositions();
+                await fetchPerformance();
+                await fetchStats();
+            }, 5000); // Every 5 seconds
+        }
+
+        // Start dashboard
+        initDashboard();
+        startAutoRefresh();
+    </script>
+</body>
+</html>
