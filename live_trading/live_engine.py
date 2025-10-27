@@ -295,7 +295,53 @@ class LiveTradingEngine:
         # Portföy özeti
         self.risk_manager.print_summary()
 
+        # Dashboard için JSON export
+        self.export_to_dashboard()
+
         return signals_generated
+
+    def export_to_dashboard(self):
+        """Dashboard için JSON dosyaları oluştur"""
+        try:
+            # Portföy verilerini hazırla
+            portfolio_data = {
+                'total_capital': self.risk_manager.total_capital,
+                'cash': self.risk_manager.cash,
+                'positions_value': sum(p.current_price * p.quantity for p in self.risk_manager.positions.values()),
+                'positions_count': len(self.risk_manager.positions),
+                'daily_pnl': self.risk_manager.daily_pnl,
+                'total_pnl': self.risk_manager.total_pnl,
+                'return_percent': (self.risk_manager.total_capital / self.risk_manager.initial_capital - 1) * 100,
+                'last_update': datetime.now().isoformat()
+            }
+
+            # Pozisyon verilerini hazırla
+            positions_data = []
+            for ticker, pos in self.risk_manager.positions.items():
+                positions_data.append({
+                    'ticker': ticker,
+                    'side': pos.side,
+                    'quantity': pos.quantity,
+                    'entry_price': pos.entry_price,
+                    'current_price': pos.current_price,
+                    'pnl': pos.pnl,
+                    'pnl_percent': pos.pnl_percent,
+                    'stop_loss': pos.stop_loss,
+                    'take_profit': pos.take_profit
+                })
+
+            # JSON dosyalarına yaz
+            portfolio_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'live_portfolio.json')
+            positions_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'live_positions.json')
+
+            with open(portfolio_file, 'w', encoding='utf-8') as f:
+                json.dump(portfolio_data, f, indent=2, ensure_ascii=False)
+
+            with open(positions_file, 'w', encoding='utf-8') as f:
+                json.dump(positions_data, f, indent=2, ensure_ascii=False)
+
+        except Exception as e:
+            self.log(f"⚠️  Dashboard export hatası: {e}")
 
     def start(self):
         """Trading motorunu başlat"""

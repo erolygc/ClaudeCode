@@ -27,50 +27,32 @@ def index():
 
 @app.route('/api/portfolio')
 def get_portfolio():
-    """Portföy durumunu getir"""
+    """Portföy durumunu getir - GERÇEK ZAMANLI"""
     try:
-        # Bu bilgi normalde live engine'den gelecek
-        # Şimdilik database'den çıkarım yapacağız
+        import json
 
-        # Son sinyalleri al
-        signals = db.get_connection()
-        cursor = signals.cursor()
+        # Live trading engine'den JSON dosyasını oku
+        portfolio_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'live_portfolio.json')
 
-        cursor.execute("""
-            SELECT ticker, signal, score, created_at
-            FROM signals
-            WHERE created_at >= datetime('now', '-1 hour')
-            ORDER BY created_at DESC
-            LIMIT 20
-        """)
-
-        recent_signals = []
-        for row in cursor.fetchall():
-            recent_signals.append({
-                'ticker': row[0],
-                'signal': row[1],
-                'score': row[2],
-                'timestamp': row[3]
-            })
-
-        signals.close()
-
-        # Aktif hisseleri al
-        tickers = db.get_all_tickers()
+        if os.path.exists(portfolio_file):
+            with open(portfolio_file, 'r', encoding='utf-8') as f:
+                portfolio_data = json.load(f)
+        else:
+            # Dosya yoksa varsayılan değerler
+            portfolio_data = {
+                'total_capital': 100000,
+                'cash': 100000,
+                'positions_value': 0,
+                'positions_count': 0,
+                'daily_pnl': 0,
+                'total_pnl': 0,
+                'return_percent': 0,
+                'last_update': datetime.now().isoformat()
+            }
 
         return jsonify({
             'status': 'ok',
-            'portfolio': {
-                'total_capital': 100000,  # Placeholder
-                'cash': 50000,
-                'positions_value': 50000,
-                'positions_count': 5,
-                'daily_pnl': 1250,
-                'total_pnl': 3500,
-                'return_percent': 3.5
-            },
-            'recent_signals': recent_signals,
-            'active_stocks': len(tickers)
+            'portfolio': portfolio_data
         })
 
     except Exception as e:
@@ -149,35 +131,22 @@ def get_performance():
 
 @app.route('/api/positions')
 def get_positions():
-    """Açık pozisyonları getir"""
+    """Açık pozisyonları getir - GERÇEK ZAMANLI"""
     try:
-        # Bu normalde risk manager'dan gelecek
+        import json
+
+        # Live trading engine'den JSON dosyasını oku
+        positions_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'live_positions.json')
+
+        if os.path.exists(positions_file):
+            with open(positions_file, 'r', encoding='utf-8') as f:
+                positions_data = json.load(f)
+        else:
+            positions_data = []
+
         return jsonify({
             'status': 'ok',
-            'positions': [
-                {
-                    'ticker': 'GARAN.IS',
-                    'side': 'BUY',
-                    'quantity': 80,
-                    'entry_price': 124.50,
-                    'current_price': 126.30,
-                    'pnl': 144.00,
-                    'pnl_percent': 1.45,
-                    'stop_loss': 118.28,
-                    'take_profit': 143.18
-                },
-                {
-                    'ticker': 'THYAO.IS',
-                    'side': 'BUY',
-                    'quantity': 50,
-                    'entry_price': 280.00,
-                    'current_price': 283.50,
-                    'pnl': 175.00,
-                    'pnl_percent': 1.25,
-                    'stop_loss': 266.00,
-                    'take_profit': 322.00
-                }
-            ]
+            'positions': positions_data
         })
 
     except Exception as e:
