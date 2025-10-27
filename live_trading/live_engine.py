@@ -303,15 +303,18 @@ class LiveTradingEngine:
     def export_to_dashboard(self):
         """Dashboard için JSON dosyaları oluştur"""
         try:
+            # Portföy istatistiklerini al (RiskManager.get_stats() kullan)
+            stats = self.risk_manager.get_stats()
+
             # Portföy verilerini hazırla
             portfolio_data = {
-                'total_capital': self.risk_manager.total_capital,
-                'cash': self.risk_manager.cash,
-                'positions_value': sum(p.current_price * p.quantity for p in self.risk_manager.positions.values()),
-                'positions_count': len(self.risk_manager.positions),
-                'daily_pnl': self.risk_manager.daily_pnl,
-                'total_pnl': self.risk_manager.total_pnl,
-                'return_percent': (self.risk_manager.total_capital / self.risk_manager.initial_capital - 1) * 100,
+                'total_capital': stats['total_capital'],
+                'cash': stats['current_capital'],
+                'positions_value': stats['positions_value'],
+                'positions_count': stats['positions_count'],
+                'daily_pnl': stats['daily_pnl'],
+                'total_pnl': stats['total_pnl'],
+                'return_percent': stats['return_percent'],
                 'last_update': datetime.now().isoformat()
             }
 
