@@ -64,8 +64,8 @@ def main():
     parser.add_argument('--stop-loss', type=float, default=0.05,
                        help='Stop loss yüzdesi (varsayılan: 0.05 = %5)')
 
-    parser.add_argument('--take-profit', type=float, default=0.15,
-                       help='Take profit yüzdesi (varsayılan: 0.15 = %15)')
+    parser.add_argument('--take-profit', type=float, default=0.08,
+                       help='Take profit yüzdesi (varsayılan: 0.08 = %8 - BIST için optimize edilmiş)')
 
     args = parser.parse_args()
 
@@ -96,19 +96,7 @@ def main():
     # Timeframe'leri parse et
     timeframes = [tf.strip() for tf in args.timeframes.split(',')]
 
-    # Engine oluştur
-    from live_trading.risk_manager import RiskManager
-
-    # Risk manager'ı custom parametrelerle oluştur
-    risk_manager = RiskManager(
-        initial_capital=args.capital,
-        max_position_size=args.position_size,
-        max_positions=args.max_positions,
-        stop_loss_percent=args.stop_loss,
-        take_profit_percent=args.take_profit
-    )
-
-    # Live engine oluştur
+    # Live engine oluştur (BIST için optimize edilmiş RiskManager ile)
     engine = LiveTradingEngine(
         mode=args.mode,
         initial_capital=args.capital,
@@ -117,8 +105,8 @@ def main():
         max_stocks=args.max_stocks
     )
 
-    # Custom risk manager'ı kullan
-    engine.risk_manager = risk_manager
+    # NOT: RiskManager parametreleri LiveEngine içinde BIST için optimize edilmiş
+    # değerlerle oluşturulmuştur (stop_loss: %5, take_profit: %8, trailing: %3)
 
     # Başlat
     try:
