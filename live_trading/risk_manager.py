@@ -223,19 +223,12 @@ class RiskManager:
 
     def calculate_stop_loss_take_profit(self, entry_price: float, side: str) -> tuple[float, float]:
         """Stop loss ve take profit seviyelerini hesapla"""
-
-        # DEBUG: Gerçek parametre değerini göster
-        print(f"🔍 DEBUG - calculate_stop_loss_take_profit için {entry_price:.2f} TL:")
-        print(f"   self.take_profit_percent = {self.take_profit_percent}")
-
         if side == 'BUY':
             stop_loss = entry_price * (1 - self.stop_loss_percent)
             take_profit = entry_price * (1 + self.take_profit_percent)
         else:  # SELL
             stop_loss = entry_price * (1 + self.stop_loss_percent)
             take_profit = entry_price * (1 - self.take_profit_percent)
-
-        print(f"   Hesaplanan TP: {take_profit:.2f} TL ({(take_profit/entry_price - 1)*100:.1f}%)")
 
         return stop_loss, take_profit
 
