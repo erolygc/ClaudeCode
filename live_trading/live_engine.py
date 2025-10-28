@@ -57,7 +57,14 @@ class LiveTradingEngine:
         self.db = DatabaseManager()
         self.collector = MarketDataCollector()
         self.signal_gen = SignalGenerator()
-        self.risk_manager = RiskManager(initial_capital=initial_capital)
+
+        # RiskManager - BIST için optimize edilmiş parametreler
+        self.risk_manager = RiskManager(
+            initial_capital=initial_capital,
+            stop_loss_percent=0.05,      # %5 stop loss
+            take_profit_percent=0.08,    # %8 take profit (BIST %10 limit)
+            trailing_stop_percent=0.03   # %3 trailing stop
+        )
 
         # Telegram bot (opsiyonel)
         self.telegram = None
