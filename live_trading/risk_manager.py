@@ -97,8 +97,25 @@ class Position:
 
         return updated, self.stop_loss
 
-    def should_close(self) -> tuple[bool, str]:
-        """Pozisyon kapatılmalı mı?"""
+    def should_close(self, current_signal: str = None, signal_score: float = 0) -> tuple[bool, str]:
+        """
+        Pozisyon kapatılmalı mı?
+
+        Args:
+            current_signal: Güncel sinyal (BUY/SELL/HOLD)
+            signal_score: Sinyal skoru (0-100)
+
+        Returns:
+            tuple: (kapatılmalı_mı, sebep)
+        """
+        # 1. SİNYAL BAZLI KAPATMA (ÖNCELİKLİ)
+        if current_signal and signal_score >= 60:
+            if self.side == 'BUY' and current_signal == 'SELL':
+                return True, 'SIGNAL_SELL'
+            elif self.side == 'SELL' and current_signal == 'BUY':
+                return True, 'SIGNAL_BUY'
+
+        # 2. FİYAT BAZLI KAPATMA (GÜVENLİK)
         if self.side == 'BUY':
             if self.current_price <= self.stop_loss:
                 return True, 'STOP_LOSS'
@@ -126,10 +143,11 @@ class RiskManager:
                  initial_capital: float = 100000,
                  max_position_size: float = 0.10,  # Sermayenin maksimum %10'u
                  max_positions: int = 10,
-                 stop_loss_percent: float = 0.05,  # %5 stop loss
-                 take_profit_percent: float = 0.15,  # %15 take profit
+                 stop_loss_percent: float = 0.05,  # %5 stop loss (BIST için uygun)
+                 take_profit_percent: float = 0.08,  # %8 take profit (BIST max %10 limit)
                  max_daily_loss_percent: float = 0.03,  # Günlük maksimum %3 kayıp
-                 min_signal_score: float = 60):
+                 min_signal_score: float = 60,
+                 trailing_stop_percent: float = 0.03):  # %3 trailing (BIST için uygun)
 
         self.initial_capital = initial_capital
         self.current_capital = initial_capital
@@ -139,6 +157,7 @@ class RiskManager:
         self.take_profit_percent = take_profit_percent
         self.max_daily_loss_percent = max_daily_loss_percent
         self.min_signal_score = min_signal_score
+        self.trailing_stop_percent = trailing_stop_percent
 
         # Açık pozisyonlar
         self.positions: Dict[str, Position] = {}
@@ -244,7 +263,8 @@ class RiskManager:
             entry_time=datetime.now(),
             stop_loss=stop_loss,
             take_profit=take_profit,
-            current_price=price
+            current_price=price,
+            trailing_stop_percent=self.trailing_stop_percent  # BIST için %3
         )
 
         # Pozisyonu kaydet
@@ -293,12 +313,13 @@ class RiskManager:
 
         return pnl
 
-    def update_positions(self, prices: Dict[str, float], notify_callback=None):
+    def update_positions(self, prices: Dict[str, float], signals: Dict[str, tuple] = None, notify_callback=None):
         """
         Tüm pozisyonları güncelle ve gerekirse kapat
 
         Args:
             prices: Hisse fiyatları dict'i
+            signals: Güncel sinyaller dict'i {ticker: (signal, score)}
             notify_callback: Trailing stop güncellemesi için callback fonksiyonu
         """
 
@@ -321,8 +342,14 @@ class RiskManager:
                     if notify_callback:
                         notify_callback(ticker, old_stop_loss, new_stop_loss, position.current_price)
 
-                # Kapatılmalı mı kontrol et
-                should_close, reason = position.should_close()
+                # Sinyal bilgisini al
+                current_signal = None
+                signal_score = 0
+                if signals and ticker in signals:
+                    current_signal, signal_score = signals[ticker]
+
+                # Kapatılmalı mı kontrol et (SİNYAL DAHİL)
+                should_close, reason = position.should_close(current_signal, signal_score)
                 if should_close:
                     positions_to_close.append((ticker, reason))
 

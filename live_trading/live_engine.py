@@ -276,14 +276,23 @@ class LiveTradingEngine:
         if self.risk_manager.positions:
             self.log(f"\n📋 Pozisyonlar güncelleniyor...")
             prices = {}
+            signals = {}
 
             for ticker in self.risk_manager.positions.keys():
                 data = self.fetch_latest_data(ticker, '1d')
                 if data is not None and len(data) > 0:
                     prices[ticker] = data['Close'].iloc[-1]
 
+                    # Bu pozisyon için güncel sinyali al
+                    try:
+                        signal_result = self.generate_signals_for_ticker(ticker, '1d')
+                        if signal_result:
+                            signals[ticker] = (signal_result['signal'], signal_result['score'])
+                    except:
+                        pass  # Sinyal alınamazsa fiyat bazlı kapatmaya devam et
+
             if prices:
-                self.risk_manager.update_positions(prices)
+                self.risk_manager.update_positions(prices, signals)
 
         # Döngü özeti
         cycle_time = time.time() - cycle_start
