@@ -219,6 +219,16 @@ class MLSignalOptimizer:
 
         print(f"\n🔧 Eğitim seti: {len(X_train)} | Test seti: {len(X_test)}")
 
+        # XGBoost için label'ları remap et ([-1,0,1] -> [0,1,2])
+        if self.model_type == 'xgboost':
+            # Label mapping: SELL(-1)->0, HOLD(0)->1, BUY(1)->2
+            label_map = {-1: 0, 0: 1, 1: 2}
+            y_train_remapped = y_train.map(label_map)
+            y_test_remapped = y_test.map(label_map)
+        else:
+            y_train_remapped = y_train
+            y_test_remapped = y_test
+
         # Normalize
         print(f"📏 Feature'lar normalize ediliyor...")
         X_train_scaled = self.scaler.fit_transform(X_train)
@@ -226,11 +236,11 @@ class MLSignalOptimizer:
 
         # Eğit
         print(f"\n🚀 Model eğitiliyor...")
-        self.model.fit(X_train_scaled, y_train)
+        self.model.fit(X_train_scaled, y_train_remapped)
 
         # Performans değerlendir
-        train_score = self.model.score(X_train_scaled, y_train)
-        test_score = self.model.score(X_test_scaled, y_test)
+        train_score = self.model.score(X_train_scaled, y_train_remapped)
+        test_score = self.model.score(X_test_scaled, y_test_remapped)
 
         print(f"\n✅ Eğitim tamamlandı!")
         print(f"   Eğitim Accuracy: {train_score*100:.2f}%")
@@ -239,16 +249,23 @@ class MLSignalOptimizer:
         # Predictions
         y_pred = self.model.predict(X_test_scaled)
 
+        # XGBoost için prediction'ları geri map et ([0,1,2] -> [-1,0,1])
+        if self.model_type == 'xgboost':
+            reverse_map = {0: -1, 1: 0, 2: 1}
+            y_pred_original = pd.Series(y_pred).map(reverse_map).values
+        else:
+            y_pred_original = y_pred
+
         # Classification report
         print(f"\n📊 SINIFLANDIRMA RAPORU:")
         print(classification_report(
-            y_test, y_pred,
+            y_test, y_pred_original,
             target_names=['SELL', 'HOLD', 'BUY'],
             zero_division=0
         ))
 
         # Confusion matrix
-        cm = confusion_matrix(y_test, y_pred)
+        cm = confusion_matrix(y_test, y_pred_original)
         print(f"\n🔢 CONFUSION MATRIX:")
         print(cm)
 
@@ -323,12 +340,22 @@ class MLSignalOptimizer:
             prediction = self.model.predict(latest_scaled)[0]
             probabilities = self.model.predict_proba(latest_scaled)[0]
 
+            # XGBoost için prediction'ı geri map et ([0,1,2] -> [-1,0,1])
+            if self.model_type == 'xgboost':
+                reverse_map = {0: -1, 1: 0, 2: 1}
+                prediction = reverse_map[prediction]
+                # Probabilities'i de yeniden sırala [SELL, HOLD, BUY]
+                probabilities = [probabilities[0], probabilities[1], probabilities[2]]
+            else:
+                # Diğer modeller için probabilities'i [-1,0,1] sırasına göre düzenle
+                probabilities = [probabilities[0], probabilities[1], probabilities[2]]
+
             # Label'ı signal'e çevir
             signal_map = {-1: 'SELL', 0: 'HOLD', 1: 'BUY'}
             signal = signal_map[prediction]
 
             # Confidence score
-            confidence = probabilities.max() * 100
+            confidence = max(probabilities) * 100
 
             return {
                 'ticker': ticker,
