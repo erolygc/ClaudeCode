@@ -66,6 +66,12 @@ class LiveTradingEngine:
             trailing_stop_percent=0.03   # %3 trailing stop
         )
 
+        # Debug: Parametreleri doğrula
+        print(f"✅ RiskManager Parametreleri:")
+        print(f"   Stop Loss: {self.risk_manager.stop_loss_percent*100:.0f}%")
+        print(f"   Take Profit: {self.risk_manager.take_profit_percent*100:.0f}%")
+        print(f"   Trailing Stop: {self.risk_manager.trailing_stop_percent*100:.0f}%")
+
         # Telegram bot (opsiyonel)
         self.telegram = None
         if TELEGRAM_AVAILABLE:
