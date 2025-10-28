@@ -393,6 +393,8 @@ def main():
                        help='Model type')
     parser.add_argument('--timeframe', type=str, default='1d',
                        help='Timeframe')
+    parser.add_argument('--stocks', type=int, default=50,
+                       help='Number of stocks to train on (default: 50)')
     parser.add_argument('--save', type=str,
                        help='Save model to file')
     parser.add_argument('--load', type=str,
@@ -409,7 +411,7 @@ def main():
     if args.train:
         # Model eğit
         results = optimizer.train(
-            tickers=ACTIVE_STOCKS[:10],  # İlk 10 hisse
+            tickers=ACTIVE_STOCKS[:args.stocks],  # İlk N hisse
             timeframe=args.timeframe
         )
 
